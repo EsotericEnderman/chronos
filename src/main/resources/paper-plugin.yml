@@ -1,0 +1,4 @@
+name: chronos
+version: '${version}'
+main: net.slqmy.chronos.ChronosPlugin
+api-version: '1.20'
