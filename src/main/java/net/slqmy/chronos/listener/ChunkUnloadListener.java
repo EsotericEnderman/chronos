@@ -23,8 +23,8 @@ public class ChunkUnloadListener implements Listener {
 
         PersistentDataContainer dataContainer = chunk.getPersistentDataContainer();
 
-        long lastLoadedTime = System.currentTimeMillis();
+        long currentTime = System.currentTimeMillis();
 
-        dataContainer.set(plugin.getChunkLastLoadedTimeKey(), PersistentDataType.LONG, lastLoadedTime);
+        dataContainer.set(plugin.getChunkLastLoadedTimeKey(), PersistentDataType.LONG, currentTime);
     }
 }

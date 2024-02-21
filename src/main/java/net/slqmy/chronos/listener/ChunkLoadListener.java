@@ -1,6 +1,7 @@
 package net.slqmy.chronos.listener;
 
 import net.slqmy.chronos.ChronosPlugin;
+import net.slqmy.chronos.manager.ChunkTimeManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.event.EventHandler;
@@ -22,16 +23,16 @@ public class ChunkLoadListener implements Listener {
     public void onChunkLoad(@NotNull ChunkLoadEvent event) {
         Chunk chunk = event.getChunk();
 
-        PersistentDataContainer dataContainer = chunk.getPersistentDataContainer();
+        ChunkTimeManager chunkTimeManager = plugin.getChunkTimeManager();
 
-        Long lastLoadedTime = dataContainer.get(plugin.getChunkLastLoadedTimeKey(), PersistentDataType.LONG);
+        Long timePassed = chunkTimeManager.getTimeSinceChunkWasLastLoaded(chunk);
 
-        if (lastLoadedTime == null) {
+        if (timePassed == null) {
             return;
         }
 
-        long timePassed = System.currentTimeMillis() - lastLoadedTime;
+        Bukkit.getLogger().info("Time passed since chunk " + chunk + " was previously loaded: " + (timePassed / 1000.0D) + " seconds." );
 
-        Bukkit.getLogger().info("Time passed since chunk " + chunk + " was previously loaded: " + (timePassed / 1000) + " seconds." );
+        chunkTimeManager.updateChunk(chunk);
     }
 }
