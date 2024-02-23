@@ -5,6 +5,7 @@ import net.slqmy.chronos.listener.ChunkUnloadListener;
 import net.slqmy.chronos.manager.ChunkTimeManager;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -24,6 +25,11 @@ public final class ChronosPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        YamlConfiguration configuration = (YamlConfiguration) getConfig();
+
+        configuration.options().copyDefaults();
+        saveDefaultConfig();
+
         chunkLastLoadedTimeKey = new NamespacedKey(this, "last_loaded_time");
 
         chunkTimeManager = new ChunkTimeManager(this);
