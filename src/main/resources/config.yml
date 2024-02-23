@@ -1,3 +1,3 @@
-# world-was-generated
-# chunk-was-last-loaded
-time-passed-since: "world-generated"
+# WORLD_GENERATED
+# CHUNK_LAST_LOADED
+passed-time-calculation-mode: "WORLD_GENERATED"

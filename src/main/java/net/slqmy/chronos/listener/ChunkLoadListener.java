@@ -7,8 +7,6 @@ import org.bukkit.Chunk;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 public class ChunkLoadListener implements Listener {
@@ -25,7 +23,7 @@ public class ChunkLoadListener implements Listener {
 
         ChunkTimeManager chunkTimeManager = plugin.getChunkTimeManager();
 
-        Long timePassed = chunkTimeManager.getTimeSinceChunkWasLastLoaded(chunk);
+        Long timePassed = chunkTimeManager.getChunkAge(chunk);
 
         if (timePassed == null) {
             return;
