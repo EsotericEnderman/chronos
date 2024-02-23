@@ -1,3 +1,8 @@
 # WORLD_GENERATED
 # CHUNK_LAST_LOADED
 passed-time-calculation-mode: "WORLD_GENERATED"
+
+durations-minutes:
+  {
+    wheat-growth: 34.93
+  }

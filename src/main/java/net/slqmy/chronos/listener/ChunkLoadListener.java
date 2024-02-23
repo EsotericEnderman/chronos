@@ -23,7 +23,7 @@ public class ChunkLoadListener implements Listener {
 
         ChunkTimeManager chunkTimeManager = plugin.getChunkTimeManager();
 
-        Long timePassed = chunkTimeManager.getChunkAge(chunk);
+        Long timePassed = chunkTimeManager.getChunkTimePassed(chunk);
 
         if (timePassed == null) {
             return;

@@ -1,21 +1,18 @@
 package net.slqmy.chronos.manager;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.state.BlockState;
 import net.slqmy.chronos.ChronosPlugin;
 import net.slqmy.chronos.enums.PassedTimeCalculationMode;
 import net.slqmy.chronos.util.ChunkUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
-import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 
 public class ChunkTimeManager {
@@ -29,7 +26,7 @@ public class ChunkTimeManager {
     }
 
     public void updateChunk(Chunk chunk) {
-        Long timePassed = getChunkAge(chunk);
+        Long timePassed = getChunkTimePassed(chunk);
 
         if (timePassed == null) {
             return;
@@ -45,45 +42,41 @@ public class ChunkTimeManager {
     public void updateBlock(@NotNull Block block, long timePassedMilliseconds) {
         timePassedMilliseconds *= TIME_SCALE;
 
-        org.bukkit.block.BlockState blockState = block.getState();
+        long timePassedSeconds = timePassedMilliseconds / 1000;
+        long timePassedMinutes = timePassedSeconds / 60;
 
-        Class<?> blockStateClass = blockState.getClass();
+        YamlConfiguration configuration = (YamlConfiguration) plugin.getConfig();
 
-        try {
-            Method blockStateClassGetHandleMethod = blockStateClass.getMethod("getHandle");
+        switch (block.getType()) {
+            case WHEAT -> {
+                Ageable wheatData = ((Ageable) block.getBlockData());
 
-            BlockState nmsBlockState = (BlockState) blockStateClassGetHandleMethod.invoke(blockState);
+                int maximumAge = wheatData.getMaximumAge();
+                int newAge = Math.min((int) Math.floor(wheatData.getAge() + timePassedMinutes * configuration.getDouble("durations-minutes.wheat-growth") / maximumAge), maximumAge);
 
-            World blockWorld = block.getWorld();
-            Class<?> worldClass = blockWorld.getClass();
+                Bukkit.getLogger().info("newAge = " + newAge);
 
-            Method worldClassGetHandleMethod = worldClass.getMethod("getHandle");
-            ServerLevel serverLevel = (ServerLevel) worldClassGetHandleMethod.invoke(blockWorld);
-
-            long timePassedTicks = (timePassedMilliseconds / 1000) * 20;
-
-            for (int tick = 0; tick < timePassedTicks; tick++) {
-                nmsBlockState.tick(serverLevel, new BlockPos(block.getX(), block.getY(), block.getZ()), serverLevel.getRandom());
+                wheatData.setAge(newAge);
+                block.setBlockData(wheatData);
             }
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException exception) {
-            throw new RuntimeException(exception);
         }
     }
 
+    @Nullable
     public Long getChunkLastLoadedTime(@NotNull Chunk chunk) {
         PersistentDataContainer dataContainer = chunk.getPersistentDataContainer();
 
         return dataContainer.get(plugin.getChunkLastLoadedTimeKey(), PersistentDataType.LONG);
     }
 
-    public Long getChunkAge(Chunk chunk) {
+    public Long getChunkTimePassed(Chunk chunk) {
         YamlConfiguration configuration = (YamlConfiguration) plugin.getConfig();
         PassedTimeCalculationMode timePassedCalculationMode = PassedTimeCalculationMode.valueOf(configuration.getString("passed-time-calculation-mode"));
 
+        Long lastLoadedTime = getChunkLastLoadedTime(chunk);
+
         switch (timePassedCalculationMode) {
             case CHUNK_LAST_LOADED -> {
-                Long lastLoadedTime = getChunkLastLoadedTime(chunk);
-
                 if (lastLoadedTime == null) {
                     return null;
                 }
@@ -92,7 +85,9 @@ public class ChunkTimeManager {
             }
 
             case WORLD_GENERATED -> {
-                return (chunk.getWorld().getFullTime() / 20L) * 1000L;
+                long worldTimeMilliseconds = (chunk.getWorld().getFullTime() / 20L) * 1000L;
+
+                return lastLoadedTime == null ? worldTimeMilliseconds : lastLoadedTime;
             }
         }
 
