@@ -29,7 +29,7 @@ public class ChunkLoadListener implements Listener {
             return;
         }
 
-        Bukkit.getLogger().info("Time passed since chunk " + chunk + " was previously loaded: " + (timePassed / 1000.0D) + " seconds." );
+        Bukkit.getLogger().info("Time passed in chunk " + chunk + ": " + (timePassed / 1000.0D) + " seconds." );
 
         chunkTimeManager.updateChunk(chunk);
     }

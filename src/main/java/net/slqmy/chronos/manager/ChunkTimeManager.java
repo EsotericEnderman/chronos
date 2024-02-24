@@ -5,8 +5,10 @@ import net.slqmy.chronos.enums.PassedTimeCalculationMode;
 import net.slqmy.chronos.util.ChunkUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -47,18 +49,25 @@ public class ChunkTimeManager {
 
         YamlConfiguration configuration = (YamlConfiguration) plugin.getConfig();
 
-        switch (block.getType()) {
-            case WHEAT -> {
-                Ageable wheatData = ((Ageable) block.getBlockData());
+        Material blockType = block.getType();
+        BlockData blockData = block.getBlockData();
 
-                int maximumAge = wheatData.getMaximumAge();
-                int newAge = Math.min((int) Math.floor(wheatData.getAge() + timePassedMinutes * configuration.getDouble("durations-minutes.wheat-growth") / maximumAge), maximumAge);
+        if (blockData instanceof Ageable ageableBlockData) {
+            int maximumAge = ageableBlockData.getMaximumAge();
 
-                Bukkit.getLogger().info("newAge = " + newAge);
+            String blockName = blockType.toString().toLowerCase();
+            double growthDuration = configuration.getDouble("growth-durations-minutes." + blockName, -1.0D);
 
-                wheatData.setAge(newAge);
-                block.setBlockData(wheatData);
+            if (growthDuration == -1.0D) {
+                return;
             }
+
+            int newAge = Math.min((int) Math.floor(ageableBlockData.getAge() + timePassedMinutes * configuration.getDouble("growth-durations-minutes." + blockName) / maximumAge), maximumAge);
+
+            Bukkit.getLogger().info("newAge = " + newAge);
+
+            ageableBlockData.setAge(newAge);
+            block.setBlockData(ageableBlockData);
         }
     }
 
@@ -86,6 +95,8 @@ public class ChunkTimeManager {
 
             case WORLD_GENERATED -> {
                 long worldTimeMilliseconds = (chunk.getWorld().getFullTime() / 20L) * 1000L;
+
+                Bukkit.getLogger().info("worldTimeMilliseconds = " + worldTimeMilliseconds);
 
                 return lastLoadedTime == null ? worldTimeMilliseconds : lastLoadedTime;
             }

@@ -2,7 +2,12 @@
 # CHUNK_LAST_LOADED
 passed-time-calculation-mode: "WORLD_GENERATED"
 
-durations-minutes:
+growth-durations-minutes:
   {
-    wheat-growth: 34.93
+    wheat: 34.93,
+    beetroot: 20,
+    potato: 5,
+    carrot: 8,
+    pumpkin: 20,
+    melon: 20,
   }
